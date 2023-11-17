@@ -4,8 +4,10 @@ from collections import Counter, defaultdict
 from math import log
 
 
-COLORS = "RYGBOL"
-SLOTS = 4
+#COLORS = "RYGBOL"
+#SLOTS = 4
+COLORS = "RYGBOLSC"
+SLOTS = 5
 
 
 def gen_combinations(slots=SLOTS):
@@ -85,7 +87,7 @@ quality = quality_by_entropy
 def greedy_guess(possibilities):
     best_guess = None
     best_max_confusion = None  # "infinity"
-    for guess in gen_combinations():
+    for i, guess in enumerate(gen_combinations()):
         results_to_possibility_count = Counter()
         for possibility in possibilities:
             result = evaluate(possibility, guess)
@@ -95,6 +97,8 @@ def greedy_guess(possibilities):
         if best_max_confusion is None or best_max_confusion > max_confusion or (best_max_confusion >= max_confusion and maybe_correct):
             best_max_confusion = max_confusion
             best_guess = guess
+        if i > 0 and i % 1000 == 0:
+            print(f"    iter {i} of MAX: {best_guess=} {best_max_confusion=}")
     return best_guess, best_max_confusion
 
 
@@ -119,16 +123,20 @@ def depth_of(possibilities, initial_guess=None):
 def run():
     possibilities = list(gen_combinations())
     print(len(possibilities))
-    possibilities = apply_restriction(possibilities, "RYGB", 0, 3)
-    possibilities = apply_restriction(possibilities, "LBRG", 2, 1)
-    possibilities = apply_restriction(possibilities, "YOLG", 1, 0)
-    #possibilities = apply_restriction(possibilities, "ROOB", 1, 2)
+    possibilities = apply_restriction(possibilities, "RYGBO", 0, 2)
+    possibilities = apply_restriction(possibilities, "SOCCY", 0, 2)
+    possibilities = apply_restriction(possibilities, "OSLLB", 1, 3)
+    possibilities = apply_restriction(possibilities, "GSLOS", 1, 2)
+    possibilities = apply_restriction(possibilities, "OBSOL", 3, 1)
+    #possibilities = apply_restriction(possibilities, "RYGB", 0, 3)
+    #possibilities = apply_restriction(possibilities, "LBRG", 2, 1)
+    #possibilities = apply_restriction(possibilities, "YOLG", 1, 0)
     print(len(possibilities))
     print(possibilities[:10])
     best_guess, best_max_confusion = greedy_guess(possibilities)
-    print(f"You should guess {''.join(best_guess)}, which has a maximum confusion count of {best_max_confusion}.")
-    depth = depth_of(possibilities)
-    print(f"The game will take at most {depth} guesses.")
+    print(f"You should guess {''.join(best_guess)}, which has a maximum quality of {best_max_confusion}.")
+    #depth = depth_of(possibilities)
+    #print(f"The game will take at most {depth} guesses.")
 
 
 if __name__ == "__main__":
